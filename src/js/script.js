@@ -114,17 +114,25 @@ window.addEventListener('DOMContentLoaded', () =>{
     // _____________________________________________________
     // form
 
+    const checkNumInputs = (selector) => {
+        const numInputs = document.querySelectorAll(selector);
 
-    const forms = () => {
-        const form = document.querySelectorAll('form'),
-              inputs = document.querySelectorAll('input'),
-              phoneInputs = document.querySelectorAll('input[name="user_phone"]');
-
-        phoneInputs.forEach(item => {
+        numInputs.forEach(item => {
             item.addEventListener('input', () => {
                 item.value = item.value.replace(/\D/, '');
             })
         })
+    }
+
+    // -------------------------------------------
+
+
+    const forms = (state) => {
+        const form = document.querySelectorAll('form'),
+              inputs = document.querySelectorAll('input');
+
+
+        checkNumInputs('input[name="user_phone"]');
 
         const message = {
             loading: 'Загрузка...',
@@ -157,6 +165,11 @@ window.addEventListener('DOMContentLoaded', () =>{
                 item.append(statusMessage);
 
                 const formData = new FormData(item);
+                if (item.getAttribute('data-calc') === "end") {
+                    for (let key in state) {
+                        formData.append(key, state[key]);
+                    }
+                }
 
                 postData('assets/server.php', formData)
                     .then(res => {
@@ -176,13 +189,139 @@ window.addEventListener('DOMContentLoaded', () =>{
         });
     }
 
-    forms();
+    let modalState = {};
+
+    forms(modalState);
 
 
-    // --------Modal-----------------------------------------------------
+    // ---------------changeModalState---------------------------------------------
+
+    // let modalState = {};
+
+    const changeModalState  = (state) => {
+         const windowForm = document.querySelectorAll('.balcon_icons_img'),
+               windowWidth = document.querySelectorAll('#width'),
+               windowHeight = document.querySelectorAll('#height'),
+               windowType = document.querySelectorAll('#view_type'),
+               windowProfile = document.querySelectorAll('.checkbox');
+
+        checkNumInputs('#width');
+        checkNumInputs('#height');
+
+        function bindActionToElems (event, elem, prop){
+            elem.forEach((item, i) => {
+                item.addEventListener(event, () => {
+                    switch(item.nodeName) {
+                        case 'SPAN' :
+                            state[prop] = i;
+                            break;
+                        case 'INPUT' :
+                            if (item.getAttribute('type') === 'checkbox') {
+                                i === 0 ? state[prop] = "ХОЛОДНОЕ" : state[prop] = "ТЕПЛОЕ";
+                                elem.forEach((box, j) => {
+                                    box.checked = false;
+                                    if (i == j) {
+                                        box.checked = true; 
+                                    }
+                                })
+                            } else {
+                                state[prop] = item.value;
+                            }
+                            break;
+                        case 'SELECT':
+                            state[prop] = item.value;
+                            break;
+                    }
+
+                    console.log(state)
+                });
+            });
+
+        }
+
+        bindActionToElems('click', windowForm, 'from');
+        bindActionToElems('input', windowHeight, 'height');
+        bindActionToElems('input', windowWidth, 'width');
+        bindActionToElems('change', windowType, 'type');
+        bindActionToElems('change', windowProfile, 'profile');
 
 
 
+
+    };
+
+    changeModalState(modalState);
+
+
+
+    // ------------------Timer---------------------------------
+
+    let deadline = '2023-04-01';
+
+    const timer = (id, deadline) => {
+
+        const addZero = (num) => {
+            if (num <= 9) {
+                return '0' + num
+            } else {
+                return num
+            }
+        }
+
+        const getTimeRema = (endtime) => {
+            const time = Date.parse(endtime) - Date.parse(new Date()),
+                  seconds = Math.floor((time/1000) % 60),
+                  min = Math.floor((time/1000/60) % 60),
+                  hours = Math.floor((time/(1000 * 60 *60)) % 24),
+                  days = Math.floor((time/(1000 * 60 *60 * 24)));
+
+            return {
+                'total': time,
+                'days': days,
+                'hours': hours,
+                'min': min,
+                'seconds': seconds
+            };
+        };
+
+        const setClock  = (selector, endtime) => {
+            const timer = document.querySelector(selector),
+                  days = timer.querySelector("#days"),
+                  hours = timer.querySelector("#hours"),
+                  min = timer.querySelector("#minutes"),
+                  seconds = timer.querySelector("#seconds"),
+                  timeInterval = setInterval(updateClock, 1000);
+
+            updateClock();
+            
+            function updateClock() {
+                const t = getTimeRema(endtime);
+
+                days.textContent = addZero(t.days)
+                hours.textContent = addZero(t.hours)
+                min.textContent = addZero(t.min)
+                seconds.textContent = addZero(t.seconds)
+
+                if (timer.total <= 0) {
+                    days.textContent = "00"
+                    hours.textContent = "00"
+                    min.textContent = "00"
+                    seconds.textContent = "00"
+
+                    clearInterval(timeInterval);
+                }
+
+            }
+        }
+
+        setClock(id, deadline)
+
+    }
+
+
+    timer('.container1', deadline);
+
+    
 
 
 })
