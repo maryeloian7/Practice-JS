@@ -10,7 +10,8 @@ window.addEventListener('DOMContentLoaded', () =>{
         const trigger = document.querySelectorAll(triggerSelector),
               modal = document.querySelector(modalSelector),
               close = document.querySelector(closeSelector),
-              windows = document.querySelectorAll('[data-modal]');
+              windows = document.querySelectorAll('[data-modal]'),
+              scroll = calcScrool();
     
     
             trigger.forEach(item => {
@@ -25,6 +26,7 @@ window.addEventListener('DOMContentLoaded', () =>{
         
                     modal.style.display = "block"
                     document.body.style.overflow = "hidden"
+                    document.body.style.marginRight = `${scroll}px`
                 })
         
                 close.addEventListener('click', () => {
@@ -34,6 +36,7 @@ window.addEventListener('DOMContentLoaded', () =>{
 
                     modal.style.display = "none"
                     document.body.style.overflow = ""
+                    document.body.style.marginRight = `0px`
                 })
             })
     
@@ -45,6 +48,7 @@ window.addEventListener('DOMContentLoaded', () =>{
 
                     modal.style.display = "none"
                     document.body.style.overflow = ""
+                    document.body.style.marginRight = `0px`
                 }
             })
         }
@@ -54,6 +58,24 @@ window.addEventListener('DOMContentLoaded', () =>{
             document.querySelector(selector).style.display= "block";                    
             document.body.style.overflow = "hidden"
         }, time);
+    }
+
+    function calcScrool() {
+        let div = document.createElement('div');
+
+        div.style.width = '50px'
+        div.style.height = '50px'
+        div.style.overflow = 'scrool'
+        div.style.visibility = 'hidden'
+
+
+        document.body.appendChild(div)
+
+        let scrollWi = div.offsetWidth - div.clientWidth;
+        div.remove;
+
+        return scrollWi
+
     }
 
 
